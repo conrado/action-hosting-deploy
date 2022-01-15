@@ -28,6 +28,7 @@ import { createGacFile } from "./createGACFile";
 import {
   deployPreview,
   deployProductionSite,
+  deployFunctions,
   ErrorResult,
   interpretChannelDeployResult,
 } from "./deploy";
@@ -45,6 +46,7 @@ const googleApplicationCredentials = getInput("firebaseServiceAccount", {
 });
 const configuredChannelId = getInput("channelId");
 const isProductionDeploy = configuredChannelId === "live";
+const isFunctionsDeploy = configuredChannelId === "functions";
 const token = process.env.GITHUB_TOKEN || getInput("repoToken");
 const octokit = token ? getOctokit(token) : undefined;
 const entryPoint = getInput("entryPoint");
@@ -95,6 +97,31 @@ async function run() {
       if (deployment.status === "error") {
         throw Error((deployment as ErrorResult).error);
       }
+      endGroup();
+
+      const hostname = target ? `${target}.web.app` : `${projectId}.web.app`;
+      const url = `https://${hostname}/`;
+      await finish({
+        details_url: url,
+        conclusion: "success",
+        output: {
+          title: `Production deploy succeeded`,
+          summary: `[${hostname}](${url})`,
+        },
+      });
+      return;
+    }
+
+    if (isFunctionsDeploy) {
+      startGroup("Deploying functions to production site");
+      const deployment = await deployFunctions(gacFilename, {
+        projectId,
+      });
+
+      if (deployment.status === "error") {
+        throw Error((deployment as ErrorResult).error);
+      }
+
       endGroup();
 
       const hostname = target ? `${target}.web.app` : `${projectId}.web.app`;

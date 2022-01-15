@@ -158,3 +158,22 @@ export async function deployProductionSite(
 
   return deploymentResult;
 }
+
+export async function deployFunctions(
+  gacFilename,
+  productionDeployConfig: ProductionDeployConfig
+) {
+  const { projectId } = productionDeployConfig;
+
+  const deploymentText = await execWithCredentials(
+    ["deploy", "--only", `functions`],
+    projectId,
+    gacFilename
+  );
+
+  const deploymentResult = JSON.parse(deploymentText) as
+    | ProductionSuccessResult
+    | ErrorResult;
+
+  return deploymentResult;
+}
