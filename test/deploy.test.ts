@@ -152,7 +152,7 @@ describe("deploy", () => {
     });
   });
 
-  describe("deploy to functions live channel", () => {
+  describe("deploy functions", () => {
     it("calls exec and interprets the output", async () => {
       // @ts-ignore read-only property
       exec.exec = jest.fn(fakeExec);

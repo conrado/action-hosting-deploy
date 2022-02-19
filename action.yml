@@ -54,6 +54,10 @@ inputs:
       directory"
     default: "."
     required: false
+  context:
+    descript: "The context to deploy to. If you leave this blank, the default context is hosting"
+    default: "hosting"
+    required: false
 outputs:
   urls:
     description: The url(s) deployed to
