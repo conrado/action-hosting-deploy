@@ -16,8 +16,6 @@
 
 import {
   endGroup,
-  error,
-  exportVariable,
   getInput,
   setFailed,
   setOutput,
@@ -45,7 +43,6 @@ import {
 const expires = getInput("expires");
 const projectId = getInput("projectId");
 const deploymentContext = getInput("context") || "hosting";
-exportVariable("INPUT_FIREBASESERVICEACCOUNT", "true");
 const googleApplicationCredentials = getInput("firebaseServiceAccount", {
   required: true,
 });
@@ -65,6 +62,7 @@ async function run() {
   }
 
   try {
+    const deploymentResult = [];
     const supportedContexts = ["hosting", "functions"];
     const notSupportedContext = deploymentContext
       .split("|")
@@ -107,14 +105,6 @@ async function run() {
     );
     endGroup();
 
-    let deploymentResult: unknown = {
-      conclusion: "not_started",
-      output: {
-        title: "Deployment failed",
-        summary: "Nothing to deploy",
-      },
-    };
-
     /**
      * Deploy to production
      */
@@ -132,14 +122,16 @@ async function run() {
       const hostname = target ? `${target}.web.app` : `${projectId}.web.app`;
       const url = `https://${hostname}/`;
 
-      deploymentResult = {
+      deploymentResult.push({
         details_url: url,
         conclusion: "success",
         output: {
           title: `Production deploy succeeded`,
           summary: `[${hostname}](${url})`,
         },
-      };
+      });
+
+      await finish(deploymentResult[deploymentResult.length - 1]);
     }
 
     /**
@@ -178,14 +170,16 @@ async function run() {
         await postChannelSuccessComment(octokit, context, deployment, commitId);
       }
 
-      deploymentResult = {
+      deploymentResult.push({
         details_url: urls[0],
         conclusion: "success",
         output: {
           title: `Deploy preview succeeded`,
           summary: getURLsMarkdownFromChannelDeployResult(deployment),
         },
-      };
+      });
+
+      await finish(deploymentResult[deploymentResult.length - 1]);
     }
 
     /**
@@ -206,20 +200,32 @@ async function run() {
       const hostname = target ? `${target}.web.app` : `${projectId}.web.app`;
       const url = `https://${hostname}/`;
 
-      deploymentResult = {
+      deploymentResult.push({
         details_url: url,
         conclusion: "success",
         output: {
           title: `Deployment of functions to production was successful`,
           summary: `[${hostname}](${url})`,
         },
-      };
+      });
+
+      await finish(deploymentResult[deploymentResult.length - 1]);
     }
 
     /**
-     * Output deployment result message
+     * Set Failed when miscofigurated
      */
-    await finish(deploymentResult);
+    if (!deploymentResult.length) {
+      deploymentResult.push({
+        conclusion: "not_started",
+        output: {
+          title: "Deployment not started",
+          summary: "Nothing to deploy or missing required inputs",
+        },
+      });
+
+      setFailed(JSON.stringify(deploymentResult));
+    }
   } catch (e) {
     setFailed(e.message);
 
