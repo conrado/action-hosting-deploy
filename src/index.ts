@@ -189,6 +189,7 @@ async function run() {
       startGroup("Deploying functions to production site");
       const deployment = await deployFunctions(gacFilename, {
         projectId,
+        target,
       });
 
       if (deployment.status === "error") {
@@ -197,7 +198,7 @@ async function run() {
 
       endGroup();
 
-      const hostname = target ? `${target}.web.app` : `${projectId}.web.app`;
+      const hostname = `${projectId}.web.app`;
       const url = `https://${hostname}/`;
 
       deploymentResult.push({

@@ -1,4 +1,14 @@
+/.yarn/*
+!/.yarn/releases
+!/.yarn/plugins
+!/.yarn/sdks
+
+# no zero-installs for this repo
+#!/.yarn/cache
+#/.pnp.*
+
 node_modules
+
 .firebase/*
 **/*.d.ts
 demo/.firebase/hosting.*.cache

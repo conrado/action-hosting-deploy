@@ -1,8 +1,9 @@
 {
   "private": true,
-  "name": "firebase-hosting-preview-action",
+  "name": "action-hosting-deploy",
   "main": "bin/action.min.js",
   "source": "src/index.ts",
+  "version": "1.0.0",
   "devDependencies": {
     "@actions/core": "^1.6.0",
     "@actions/exec": "^1.1.0",

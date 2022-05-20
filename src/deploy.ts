@@ -163,10 +163,10 @@ export async function deployFunctions(
   gacFilename,
   productionDeployConfig: ProductionDeployConfig
 ) {
-  const { projectId } = productionDeployConfig;
+  const { projectId, target } = productionDeployConfig;
 
   const deploymentText = await execWithCredentials(
-    ["deploy", "--only", `functions`],
+    ["deploy", "--only", `functions${target ? ":" + target : ""}`],
     projectId,
     gacFilename
   );
